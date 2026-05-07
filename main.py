@@ -9,19 +9,16 @@ import uvicorn
 
 app = FastAPI(title="Pereval API Sprint 2")
 
-
 # Pydantic модели
 class CoordinateSchema(BaseModel):
     latitude: float
     longitude: float
-
 
 class LevelSchema(BaseModel):
     winter: Optional[str] = None
     summer: Optional[str] = None
     autumn: Optional[str] = None
     spring: Optional[str] = None
-
 
 class UserSchema(BaseModel):
     email: str
@@ -30,11 +27,9 @@ class UserSchema(BaseModel):
     name: str
     otc: Optional[str] = None
 
-
 class ImageSchema(BaseModel):
     data: str
     title: str
-
 
 class PerevalCreate(BaseModel):
     beauty_title: str
@@ -47,7 +42,6 @@ class PerevalCreate(BaseModel):
     level: LevelSchema
     images: Optional[List[ImageSchema]] = []
 
-
 class PerevalUpdate(BaseModel):
     beauty_title: Optional[str] = None
     title: Optional[str] = None
@@ -57,7 +51,6 @@ class PerevalUpdate(BaseModel):
     level: Optional[LevelSchema] = None
     images: Optional[List[ImageSchema]] = None
 
-
 # 1. POST /submitData
 @app.post("/submitData")
 def add_pereval(data: PerevalCreate, db: Session = Depends(get_db)):
@@ -66,7 +59,6 @@ def add_pereval(data: PerevalCreate, db: Session = Depends(get_db)):
         Pereval.beauty_title == data.beauty_title,
         Pereval.title == data.title
     ).first()
-
     if existing:
         return {"status": 500, "message": "Duplicate entry", "id": None}
 
@@ -116,7 +108,6 @@ def add_pereval(data: PerevalCreate, db: Session = Depends(get_db)):
     db.commit()
     return {"status": 200, "message": "Success", "id": pereval.id}
 
-
 # 2. GET /submitData/{id}
 @app.get("/submitData/{pereval_id}")
 def get_pereval(pereval_id: int, db: Session = Depends(get_db)):
@@ -153,7 +144,6 @@ def get_pereval(pereval_id: int, db: Session = Depends(get_db)):
         },
         "images": [{"id": img.id, "title": img.title, "data": img.data} for img in images]
     }
-
 
 # 3. PATCH /submitData/{id}
 @app.patch("/submitData/{pereval_id}")
@@ -196,12 +186,11 @@ def update_pereval(pereval_id: int, update_data: PerevalUpdate, db: Session = De
     db.commit()
     return {"state": 1, "message": "Запись успешно обновлена"}
 
-
 # 4. GET /submitData?user_email=...
 @app.get("/submitData")
 def get_user_perevals(
-        user_email: str = Query(..., description="Email пользователя"),
-        db: Session = Depends(get_db)
+    user_email: str = Query(..., description="Email пользователя"),
+    db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(User.email == user_email).first()
     if not user:
@@ -219,7 +208,6 @@ def get_user_perevals(
         }
         for p in perevals
     ]
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
